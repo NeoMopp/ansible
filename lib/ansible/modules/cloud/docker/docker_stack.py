@@ -206,6 +206,11 @@ def docker_stack_rm(module, stack_name, retries, interval):
     return rc, out, err
 
 
+def docker_stack_converge(module, stack_name, replicas, replica_timeout):
+    """
+    Wait for the docker stack to converge giving us the correct number of replicas.
+    """
+
 def main():
     module = AnsibleModule(
         argument_spec={
@@ -216,7 +221,9 @@ def main():
             'resolve_image': dict(type='str', choices=['always', 'changed', 'never']),
             'state': dict(tpye='str', default='present', choices=['present', 'absent']),
             'absent_retries': dict(type='int', default=0),
-            'absent_retries_interval': dict(type='int', default=1)
+            'absent_retries_interval': dict(type='int', default=1),
+            'replicas': dict(type='int', default=1),
+            'replica_timeout': dict(type='int', default=10)
         },
         supports_check_mode=False
     )
@@ -232,6 +239,8 @@ def main():
     name = module.params['name']
     absent_retries = module.params['absent_retries']
     absent_retries_interval = module.params['absent_retries_interval']
+    replicas = module.params['replicas']
+    replica_timeout = module.params['replica_timeout']
 
     if state == 'present':
         if not compose:
